@@ -18,17 +18,22 @@ class MoodScoreSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO 1.1: Show one ChoiceChip for each score from 1 to 10:
-    //   - label: Text('$score')
-    //   - selected: true only for the chip that matches selectedScore
-    //   - onSelected: (_) => onChanged(score)
-    //   The selector stores nothing itself. Its parent says which score is
-    //   selected and hears about taps through onChanged.
+    // The selector stores nothing itself: its parent says which score is
+    // selected and hears about taps through onChanged.
     //
-    //   Put the chips in a Wrap (spacing: 8, runSpacing: 8). Then swap the
-    //   Wrap for a Row and run the app on a narrow phone. What happens?
-    //   Hint: a for loop inside the list literal:
-    //     for (var score = 1; score <= 10; score++) ChoiceChip(...)
-    return const Text('Scores 1-10 go here');
+    // A Wrap moves chips to a new line when the row is full. A Row would
+    // overflow on a narrow phone (yellow-and-black stripes).
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (var score = 1; score <= 10; score++)
+          ChoiceChip(
+            label: Text('$score'),
+            selected: selectedScore == score,
+            onSelected: (_) => onChanged(score),
+          ),
+      ],
+    );
   }
 }
