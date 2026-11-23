@@ -20,6 +20,9 @@ class _MoodEntryFormState extends State<MoodEntryForm> {
   /// The selected score. It starts with nothing selected.
   int? _score;
 
+  bool _showScoreError = false;
+  bool _showNoteError = false;
+
   /// Holds the text of the note field. It owns resources and listeners, so
   /// whoever creates it must also dispose of it.
   final TextEditingController _noteController = TextEditingController();
@@ -32,9 +35,15 @@ class _MoodEntryFormState extends State<MoodEntryForm> {
 
   void _save() {
     final score = _score;
-    if (score == null) return;
-
     final note = _noteController.text.trim();
+    // Validate the trimmed note, which is the text that will actually be saved.
+    final noteIsValid = note.length <= maxNoteLength;
+    setState(() {
+      _showScoreError = score == null;
+      _showNoteError = !noteIsValid;
+    });
+    if (score == null || !noteIsValid) return;
+
     widget.onSubmit(
       MoodEntry(
         score: score,
@@ -45,6 +54,8 @@ class _MoodEntryFormState extends State<MoodEntryForm> {
 
     setState(() {
       _score = null;
+      _showScoreError = false;
+      _showNoteError = false;
     });
     _noteController.clear();
   }
@@ -69,9 +80,15 @@ class _MoodEntryFormState extends State<MoodEntryForm> {
                 // run again, so the chip would not look selected.
                 setState(() {
                   _score = score;
+                  _showScoreError = false;
                 });
               },
             ),
+            if (_showScoreError)
+              const Padding(
+                padding: EdgeInsets.only(top: 8),
+                child: Text('Choose a score from 1 to 10'),
+              ),
             const SizedBox(height: 12),
             TextField(
               controller: _noteController,
@@ -80,13 +97,21 @@ class _MoodEntryFormState extends State<MoodEntryForm> {
                 border: OutlineInputBorder(),
               ),
               maxLines: null,
+              onChanged: (_) {
+                if (_showNoteError) {
+                  setState(() {
+                    _showNoteError = false;
+                  });
+                }
+              },
             ),
+            if (_showNoteError)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text('Note must be at most $maxNoteLength characters'),
+              ),
             const SizedBox(height: 12),
-            FilledButton(
-              // null disables the button until a score is chosen.
-              onPressed: _score == null ? null : _save,
-              child: const Text('Save entry'),
-            ),
+            FilledButton(onPressed: _save, child: const Text('Save entry')),
           ],
         ),
       ),
